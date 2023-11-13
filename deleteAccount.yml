@@ -1,0 +1,16 @@
+---
+- name: Delete a linux account
+  hosts: allservers
+  tasks:
+    - name: Delete user
+      ansible.builtin.user:
+        name: "{{ userName }}"
+        state: absent
+        remove: true
+      become: true
+
+    - name: Delete sudoers file if it was present
+      when: isSudo == "false"
+      block:
+        - name: Delete sudoers file if it was present
+          ansible.builtin.include_tasks: libDeleteSudoers.yml

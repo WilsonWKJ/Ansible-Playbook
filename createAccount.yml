@@ -1,0 +1,34 @@
+---
+- name: Create a linux account
+  hosts: allservers
+  any_errors_fatal: true
+  max_fail_percentage: 0
+  serial: "{{ nbHost }}"
+  tasks:
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ userName }}"
+        shell: /bin/bash
+        expires: "{{ dateLimit }}"
+      become: true
+
+    - name: Add public key to the new user
+      ansible.posix.authorized_key:
+        user: "{{ userName }}"
+        exclusive: true
+        key: "{{ lookup('file', keyPath) }}"
+      become: true
+
+    - name: Add the new user to the sudoers
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/{{ userName }}"
+        content: "{{ userName }} ALL=(ALL) NOPASSWD:ALL"
+        mode: '0440'
+      become: true
+      when: isSudo == "true"
+
+    - name: Delete sudoers file if it was present
+      when: isSudo == "false"
+      block:
+        - name: Delete sudoers file if it was present
+          ansible.builtin.include_tasks: libDeleteSudoers.yml

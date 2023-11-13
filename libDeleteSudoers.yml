@@ -1,0 +1,12 @@
+- name: Check if sudoers file is present
+  ansible.builtin.stat:
+    path: "/etc/sudoers.d/{{ userName }}"
+  register: sudoers_file
+  become: true
+
+- name: Delete the user sudoers files
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/{{ userName }}"
+    state: absent
+  become: true
+  when: sudoers_file.stat.exists
